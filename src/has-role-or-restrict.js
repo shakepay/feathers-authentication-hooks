@@ -33,6 +33,7 @@ export default function (options = {}) {
       return hook;
     }
 
+    const { entity } = hook.app.get('authentication');
     options = Object.assign({}, defaults, hook.app.get('authentication'), options);
 
     // If we don't have a user we have to always use find instead of get because we must not return id queries that are unrestricted and we don't want the developer to have to add after hooks.
@@ -48,7 +49,7 @@ export default function (options = {}) {
     // set on the resource we are requesting.
     const params = Object.assign({}, hook.params, { provider: undefined });
 
-    if (!hook.params.user) {
+    if (!hook.params[entity]) {
       if (hook.result) {
         return hook;
       }
@@ -67,12 +68,12 @@ export default function (options = {}) {
     }
 
     let authorized = false;
-    let roles = get(hook.params.user, options.fieldName);
-    const id = get(hook.params.user, options.idField);
+    let roles = get(hook.params[entity], options.fieldName);
+    const id = get(hook.params[entity], options.idField);
     const error = new errors.Forbidden('You do not have valid permissions to access this.');
 
     if (id === undefined) {
-      throw new Error(`'${options.idField} is missing from current user.'`);
+      throw new Error(`'${options.idField} is missing from current ${entity}.'`);
     }
 
     // If the user doesn't even have a `fieldName` field and we're not checking

@@ -12,20 +12,22 @@ export default function (options = {}) {
       throw new Error(`The 'queryWithCurrentUser' hook should only be used as a 'before' hook.`);
     }
 
-    if (!hook.params.user) {
+    const { entity } = hook.app.get('authentication');
+
+    if (!hook.params[entity]) {
       if (!hook.params.provider) {
         return hook;
       }
 
-      throw new Error('There is no current user to associate.');
+      throw new Error(`There is no current ${entity} to associate.`);
     }
 
     options = Object.assign({}, defaults, hook.app.get('authentication'), options);
 
-    const id = get(hook.params.user, options.idField);
+    const id = get(hook.params[entity], options.idField);
 
     if (id === undefined) {
-      throw new Error(`Current user is missing '${options.idField}' field.`);
+      throw new Error(`Current ${entity} is missing '${options.idField}' field.`);
     }
 
     set(hook.params, `query.${options.as}`, id);

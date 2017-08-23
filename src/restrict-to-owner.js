@@ -33,16 +33,18 @@ export default function (options = {}) {
       throw new errors.MethodNotAllowed(`The 'restrictToOwner' hook should only be used on the 'get', 'update', 'patch' and 'remove' service methods.`);
     }
 
-    if (!hook.params.user) {
+    const { entity } = hook.app.get('authentication');
+
+    if (!hook.params[entity]) {
       // TODO (EK): Add a debugger call to remind the dev to check their hook chain
       // as they probably don't have the right hooks in the right order.
-      throw new errors.NotAuthenticated(`The current user is missing. You must not be authenticated.`);
+      throw new errors.NotAuthenticated(`The current ${entity} is missing. You must not be authenticated.`);
     }
 
-    const id = get(hook.params.user, options.idField);
+    const id = get(hook.params[entity], options.idField);
 
     if (id === undefined) {
-      throw new Error(`'${options.idField} is missing from current user.'`);
+      throw new Error(`'${options.idField} is missing from current ${entity}.'`);
     }
 
     // look up the document and throw a Forbidden error if the user is not an owner

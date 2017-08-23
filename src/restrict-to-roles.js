@@ -24,7 +24,9 @@ export default function (options = {}) {
       return hook;
     }
 
-    if (!hook.params.user) {
+    const { entity } = hook.app.get('authentication');
+
+    if (!hook.params[entity]) {
       // TODO (EK): Add a debugger call to remind the dev to check their hook chain
       // as they probably don't have the right hooks in the right order.
       throw new errors.NotAuthenticated();
@@ -33,12 +35,12 @@ export default function (options = {}) {
     options = Object.assign({}, defaults, hook.app.get('authentication'), options);
 
     let authorized = false;
-    let roles = get(hook.params.user, options.fieldName);
-    const id = get(hook.params.user, options.idField);
+    let roles = get(hook.params[entity], options.fieldName);
+    const id = get(hook.params[entity], options.idField);
     const error = new errors.Forbidden('You do not have valid permissions to access this.');
 
     if (id === undefined) {
-      throw new Error(`'${options.idField} is missing from current user.'`);
+      throw new Error(`'${options.idField} is missing from current ${entity}.'`);
     }
 
     // If the user doesn't even have a `fieldName` field and we're not checking
